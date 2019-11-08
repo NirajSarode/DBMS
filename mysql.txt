@@ -1,0 +1,700 @@
+mysql> create database niraj;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> use niraj;
+Database changed
+mysql> create table book(ISBN unique not null int, title not null varchar(20),pub_name varchar(20),price int, dop date, bookcopy int, CHECK(price>0),primary key(ISBN) );
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'unique not null int, title not null varchar(20),pub_name varchar(20),price int, ' at line 1
+mysql> create table book(ISBN int unique not null, title varchar(20) not null,pub_name varchar(20),price int, dop date, bookcopy int, CHECK(price>0),primary key(ISBN) );
+Query OK, 0 rows affected (0.41 sec)
+
+mysql> desc
+    -> niraj;
+ERROR 1146 (42S02): Table 'niraj.niraj' doesn't exist
+mysql> desc book;
++----------+-------------+------+-----+---------+-------+
+| Field    | Type        | Null | Key | Default | Extra |
++----------+-------------+------+-----+---------+-------+
+| ISBN     | int(11)     | NO   | PRI | NULL    |       |
+| title    | varchar(20) | NO   |     | NULL    |       |
+| pub_name | varchar(20) | YES  |     | NULL    |       |
+| price    | int(11)     | YES  |     | NULL    |       |
+| dop      | date        | YES  |     | NULL    |       |
+| bookcopy | int(11)     | YES  |     | NULL    |       |
++----------+-------------+------+-----+---------+-------+
+6 rows in set (0.03 sec)
+
+mysql> create table authors(ISBN int , author_name varchar(20), authorcity varchar(20) default('pune'),ph varchar(10) unique,primary key(ISBN),foreign key(ISBN) references book(ISBN) on delete cascade on update cascade);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '('pune'),ph varchar(10) unique,primary key(ISBN),foreign key(ISBN) references bo' at line 1
+mysql> create table authors(ISBN int , author_name varchar(20), authorcity varchar(20) default 'pune',ph varchar(10) unique,primary key(ISBN),foreign key(ISBN) references book(ISBN) on delete cascade on update cascade);
+Query OK, 0 rows affected (0.40 sec)
+
+mysql> desc authors;
++-------------+-------------+------+-----+---------+-------+
+| Field       | Type        | Null | Key | Default | Extra |
++-------------+-------------+------+-----+---------+-------+
+| ISBN        | int(11)     | NO   | PRI | NULL    |       |
+| author_name | varchar(20) | YES  |     | NULL    |       |
+| authorcity  | varchar(20) | YES  |     | pune    |       |
+| ph          | varchar(10) | YES  | UNI | NULL    |       |
++-------------+-------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> insert into book values (
+    -> (1,abc,pqr,100,'1999/10/17',10),
+    -> (2,abc1,pqr1,150,'2000/10/17',11),
+    -> (3,abc2,pqr2,250,'2000/05/17',20),
+    -> (4,abc3,pqr3,250,'2000/05/17',20)
+    -> );
+ERROR 1136 (21S01): Column count doesn't match value count at row 1
+mysql> insert into book values (1,abc,pqr,100,'1999/10/17',10), (2,abc1,pqr1,150,'2000/10/17',11), (3,abc2,pqr2,250,'2000/05/17',20), (4,abc3,pqr3,250,'2000/05/17',20) ;
+ERROR 1054 (42S22): Unknown column 'abc' in 'field list'
+mysql> insert into book values (1,'abc','pqr',100,'1999/10/17',10), (2,'abc1','pqr1',150,'2000/10/17',11), (3,'abc2','pqr2',250,'2000/05/17',20), (4,'abc3','pqr3',250,'2000/05/17',20) ;
+Query OK, 4 rows affected (0.14 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> insert into author values (1,'aaa','p',1000000000), (2,'bbb',default,150000000), (3,'ccc','r',2500000000000) ;
+ERROR 1146 (42S02): Table 'niraj.author' doesn't exist
+mysql> insert into authors values (1,'aaa','p',1000000000), (2,'bbb',default,150000000), (3,'ccc','r',2500000000000) ;
+ERROR 1406 (22001): Data too long for column 'ph' at row 3
+mysql> insert into authors values (1,'aaa','p',1000000000), (2,'bbb',default,150000000), (3,'ccc','r',25000000) ;
+Query OK, 3 rows affected (0.13 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> alter table authors add column addr varchar(20);
+
+Query OK, 0 rows affected (0.71 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> 
+mysql> desc authors;
++-------------+-------------+------+-----+---------+-------+
+| Field       | Type        | Null | Key | Default | Extra |
++-------------+-------------+------+-----+---------+-------+
+| ISBN        | int(11)     | NO   | PRI | NULL    |       |
+| author_name | varchar(20) | YES  |     | NULL    |       |
+| authorcity  | varchar(20) | YES  |     | pune    |       |
+| ph          | varchar(10) | YES  | UNI | NULL    |       |
+| addr        | varchar(20) | YES  |     | NULL    |       |
++-------------+-------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> create view v1 as select ISBN,title,pub_name from book;
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> show v1;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'v1' at line 1
+mysql> select * from v1;
++------+-------+----------+
+| ISBN | title | pub_name |
++------+-------+----------+
+|    1 | abc   | pqr      |
+|    2 | abc1  | pqr1     |
+|    3 | abc2  | pqr2     |
+|    4 | abc3  | pqr3     |
++------+-------+----------+
+4 rows in set (0.00 sec)
+
+mysql> create view v2 as select *  from book where year(;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> create view v2 as select *  from book where year(dop)>1999;
+Query OK, 0 rows affected (0.09 sec)
+
+mysql> select * from v2;
++------+-------+----------+-------+------------+----------+
+| ISBN | title | pub_name | price | dop        | bookcopy |
++------+-------+----------+-------+------------+----------+
+|    2 | abc1  | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | abc2  | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3  | pqr3     |   250 | 2000-05-17 |       20 |
++------+-------+----------+-------+------------+----------+
+3 rows in set (0.00 sec)
+
+mysql> drop view v2;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from v2;
+ERROR 1146 (42S02): Table 'niraj.v2' doesn't exist
+mysql> select * from book;
++------+-------+----------+-------+------------+----------+
+| ISBN | title | pub_name | price | dop        | bookcopy |
++------+-------+----------+-------+------------+----------+
+|    1 | abc   | pqr      |   100 | 1999-10-17 |       10 |
+|    2 | abc1  | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | abc2  | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3  | pqr3     |   250 | 2000-05-17 |       20 |
++------+-------+----------+-------+------------+----------+
+4 rows in set (0.00 sec)
+
+mysql> insert into v1 values (5,'new','new1');
+Query OK, 1 row affected (0.12 sec)
+
+mysql> select * from book;
++------+-------+----------+-------+------------+----------+
+| ISBN | title | pub_name | price | dop        | bookcopy |
++------+-------+----------+-------+------------+----------+
+|    1 | abc   | pqr      |   100 | 1999-10-17 |       10 |
+|    2 | abc1  | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | abc2  | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3  | pqr3     |   250 | 2000-05-17 |       20 |
+|    5 | new   | new1     |  NULL | NULL       |     NULL |
++------+-------+----------+-------+------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from v1;
++------+-------+----------+
+| ISBN | title | pub_name |
++------+-------+----------+
+|    1 | abc   | pqr      |
+|    2 | abc1  | pqr1     |
+|    3 | abc2  | pqr2     |
+|    4 | abc3  | pqr3     |
+|    5 | new   | new1     |
++------+-------+----------+
+5 rows in set (0.00 sec)
+
+mysql> update view v1 set title = 'abcnew' where ISBN =1;
+ERROR 1146 (42S02): Table 'niraj.view' doesn't exist
+mysql> update v1 set title = 'abcnew' where ISBN =1;
+Query OK, 1 row affected (0.16 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from v1;
++------+--------+----------+
+| ISBN | title  | pub_name |
++------+--------+----------+
+|    1 | abcnew | pqr      |
+|    2 | abc1   | pqr1     |
+|    3 | abc2   | pqr2     |
+|    4 | abc3   | pqr3     |
+|    5 | new    | new1     |
++------+--------+----------+
+5 rows in set (0.01 sec)
+
+mysql> select * from book;
++------+--------+----------+-------+------------+----------+
+| ISBN | title  | pub_name | price | dop        | bookcopy |
++------+--------+----------+-------+------------+----------+
+|    1 | abcnew | pqr      |   100 | 1999-10-17 |       10 |
+|    2 | abc1   | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | abc2   | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3   | pqr3     |   250 | 2000-05-17 |       20 |
+|    5 | new    | new1     |  NULL | NULL       |     NULL |
++------+--------+----------+-------+------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> create index i1 on book (ISBN);
+Query OK, 0 rows affected (0.37 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show i1;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'i1' at line 1
+mysql> show index;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> show index i1;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'i1' at line 1
+mysql> show indices;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'indices' at line 1
+mysql> help
+
+For information about MySQL products and services, visit:
+   http://www.mysql.com/
+For developer information, including the MySQL Reference Manual, visit:
+   http://dev.mysql.com/
+To buy MySQL Enterprise support, training, or other products, visit:
+   https://shop.mysql.com/
+
+List of all MySQL commands:
+Note that all text commands must be first on line and end with ';'
+?         (\?) Synonym for `help'.
+clear     (\c) Clear the current input statement.
+connect   (\r) Reconnect to the server. Optional arguments are db and host.
+delimiter (\d) Set statement delimiter.
+edit      (\e) Edit command with $EDITOR.
+ego       (\G) Send command to mysql server, display result vertically.
+exit      (\q) Exit mysql. Same as quit.
+go        (\g) Send command to mysql server.
+help      (\h) Display this help.
+nopager   (\n) Disable pager, print to stdout.
+notee     (\t) Don't write into outfile.
+pager     (\P) Set PAGER [to_pager]. Print the query results via PAGER.
+print     (\p) Print current command.
+prompt    (\R) Change your mysql prompt.
+quit      (\q) Quit mysql.
+rehash    (\#) Rebuild completion hash.
+source    (\.) Execute an SQL script file. Takes a file name as an argument.
+status    (\s) Get status information from the server.
+system    (\!) Execute a system shell command.
+tee       (\T) Set outfile [to_outfile]. Append everything into given outfile.
+use       (\u) Use another database. Takes database name as argument.
+charset   (\C) Switch to another charset. Might be needed for processing binlog with multi-byte charsets.
+warnings  (\W) Show warnings after every statement.
+nowarning (\w) Don't show warnings after every statement.
+resetconnection(\x) Clean session context.
+
+For server side help, type 'help contents'
+
+mysql> qawtylp[lohyreaqWEDRGYHUJL[']\
+    '> ]'
+    -> 
+    -> ;
+[1]+  Stopped                 mysql
+root@lenovo:~# mysql
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 4
+Server version: 5.7.27-0ubuntu0.18.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2019, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> USE NIRAJ;
+ERROR 1049 (42000): Unknown database 'NIRAJ'
+mysql> use niraj;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> show index from book;
++-------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+| Table | Non_unique | Key_name | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment |
++-------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+| book  |          0 | PRIMARY  |            1 | ISBN        | A         |           4 |     NULL | NULL   |      | BTREE      |         |               |
+| book  |          0 | ISBN     |            1 | ISBN        | A         |           4 |     NULL | NULL   |      | BTREE      |         |               |
+| book  |          1 | i1       |            1 | ISBN        | A         |           5 |     NULL | NULL   |      | BTREE      |         |               |
++-------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+3 rows in set (0.01 sec)
+
+mysql> 
+mysql> create index on authors(ISBN,author_name);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'on authors(ISBN,author_name)' at line 1
+mysql> create index ci1  on authors(ISBN,author_name);
+Query OK, 0 rows affected (0.38 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show index from book;
++-------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+| Table | Non_unique | Key_name | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment |
++-------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+| book  |          0 | PRIMARY  |            1 | ISBN        | A         |           4 |     NULL | NULL   |      | BTREE      |         |               |
+| book  |          0 | ISBN     |            1 | ISBN        | A         |           4 |     NULL | NULL   |      | BTREE      |         |               |
+| book  |          1 | i1       |            1 | ISBN        | A         |           5 |     NULL | NULL   |      | BTREE      |         |               |
++-------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+3 rows in set (0.00 sec)
+
+mysql> show index from authors;
++---------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+| Table   | Non_unique | Key_name | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment |
++---------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+| authors |          0 | PRIMARY  |            1 | ISBN        | A         |           3 |     NULL | NULL   |      | BTREE      |         |               |
+| authors |          0 | ph       |            1 | ph          | A         |           3 |     NULL | NULL   | YES  | BTREE      |         |               |
+| authors |          1 | ci1      |            1 | ISBN        | A         |           3 |     NULL | NULL   |      | BTREE      |         |               |
+| authors |          1 | ci1      |            2 | author_name | A         |           3 |     NULL | NULL   | YES  | BTREE      |         |               |
++---------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+
+4 rows in set (0.00 sec)
+
+mysql> alter table modify column ISBN ISBN int auto_increment;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'column ISBN ISBN int auto_increment' at line 1
+mysql> alter table book modify ISBN ISBN int auto_increment;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'ISBN int auto_increment' at line 1
+mysql> alter table book modify column ISBN ISBN int auto_increment;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'ISBN int auto_increment' at line 1
+mysql> alter table book modify column ISBN ISBN int ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'ISBN int' at line 1
+mysql> alter table book modify column ISBN ;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '' at line 1
+mysql> alter table book modify column ISBN int auto_increment;
+ERROR 1833 (HY000): Cannot change column 'ISBN': used in a foreign key constraint 'authors_ibfk_1' of table 'niraj.authors'
+mysql> alter table book modify column price  int auto_increment;
+ERROR 1075 (42000): Incorrect table definition; there can be only one auto column and it must be defined as a key
+mysql> select * from authors where city='pune];
+    '> ;
+    '> [
+    '> ]
+    '> '
+    -> ;
+ERROR 1054 (42S22): Unknown column 'city' in 'where clause'
+mysql> select * from authors where city='pune';
+ERROR 1054 (42S22): Unknown column 'city' in 'where clause'
+mysql> select * from authors where authorcity='pune';
++------+-------------+------------+-----------+------+
+| ISBN | author_name | authorcity | ph        | addr |
++------+-------------+------------+-----------+------+
+|    2 | bbb         | pune       | 150000000 | NULL |
++------+-------------+------------+-----------+------+
+1 row in set (0.00 sec)
+
+mysql> select * from book where bookcopy between 10 and 15;
++------+--------+----------+-------+------------+----------+
+| ISBN | title  | pub_name | price | dop        | bookcopy |
++------+--------+----------+-------+------------+----------+
+|    1 | abcnew | pqr      |   100 | 1999-10-17 |       10 |
+|    2 | abc1   | pqr1     |   150 | 2000-10-17 |       11 |
++------+--------+----------+-------+------------+----------+
+2 rows in set (0.00 sec)
+
+mysql> select avg(price),ISBN from book where year(dop) between 1999 and 2001;
+ERROR 1140 (42000): In aggregated query without GROUP BY, expression #2 of SELECT list contains nonaggregated column 'niraj.book.ISBN'; this is incompatible with sql_mode=only_full_group_by
+mysql> select avg(price) from book where year(dop) between 1999 and 2001;
++------------+
+| avg(price) |
++------------+
+|   187.5000 |
++------------+
+1 row in set (0.00 sec)
+
+mysql> select avg(price) from book where year(dop) between 1999 and 2001 group by ISBN;
++------------+
+| avg(price) |
++------------+
+|   100.0000 |
+|   150.0000 |
+|   250.0000 |
+|   250.0000 |
++------------+
+4 rows in set (0.00 sec)
+
+mysql> select avg(price),ISBN from book where year(dop) between 1999 and 2001 group by ISBN;
++------------+------+
+| avg(price) | ISBN |
++------------+------+
+|   100.0000 |    1 |
+|   150.0000 |    2 |
+|   250.0000 |    3 |
+|   250.0000 |    4 |
++------------+------+
+4 rows in set (0.01 sec)
+
+mysql> select author_name from authors where ISBN in (select ISBN from book where price=min(price));
+ERROR 1111 (HY000): Invalid use of group function
+mysql> select author_name from authors where ISBN in (select ISBN from book where price in (select min(price) from book)));
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')' at line 1
+mysql> select author_name from authors where ISBN in (select ISBN from book where price in (select min(price) from book))));
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '))' at line 1
+mysql> select author_name from authors where ISBN in (select ISBN from book where price in (select min(price) from book));
++-------------+
+| author_name |
++-------------+
+| aaa         |
++-------------+
+1 row in set (0.00 sec)
+
+mysql> select * from book;
++------+--------+----------+-------+------------+----------+
+| ISBN | title  | pub_name | price | dop        | bookcopy |
++------+--------+----------+-------+------------+----------+
+|    1 | abcnew | pqr      |   100 | 1999-10-17 |       10 |
+|    2 | abc1   | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | abc2   | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3   | pqr3     |   250 | 2000-05-17 |       20 |
+|    5 | new    | new1     |  NULL | NULL       |     NULL |
++------+--------+----------+-------+------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from authors;
++------+-------------+------------+------------+------+
+| ISBN | author_name | authorcity | ph         | addr |
++------+-------------+------------+------------+------+
+|    1 | aaa         | p          | 1000000000 | NULL |
+|    2 | bbb         | pune       | 150000000  | NULL |
+|    3 | ccc         | r          | 25000000   | NULL |
++------+-------------+------------+------------+------+
+3 rows in set (0.00 sec)
+
+mysql> select ucase(author_name) from authors where authorcity='pune';
++--------------------+
+| ucase(author_name) |
++--------------------+
+| BBB                |
++--------------------+
+1 row in set (0.01 sec)
+
+mysql> select * from book union select * from authors;
+ERROR 1222 (21000): The used SELECT statements have a different number of columns
+mysql> select ISBN from book union select ISBN from authors;
++------+
+| ISBN |
++------+
+|    1 |
+|    2 |
+|    3 |
+|    4 |
+|    5 |
++------+
+5 rows in set (0.00 sec)
+
+mysql> select ISBN from book union select author_name from authors;
++------+
+| ISBN |
++------+
+| 1    |
+| 2    |
+| 3    |
+| 4    |
+| 5    |
+| aaa  |
+| bbb  |
+| ccc  |
++------+
+8 rows in set (0.00 sec)
+
+mysql> select * from book order by bookcopy ;
++------+--------+----------+-------+------------+----------+
+| ISBN | title  | pub_name | price | dop        | bookcopy |
++------+--------+----------+-------+------------+----------+
+|    5 | new    | new1     |  NULL | NULL       |     NULL |
+|    1 | abcnew | pqr      |   100 | 1999-10-17 |       10 |
+|    2 | abc1   | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | abc2   | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3   | pqr3     |   250 | 2000-05-17 |       20 |
++------+--------+----------+-------+------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from book order by bookcopy desc ;
++------+--------+----------+-------+------------+----------+
+| ISBN | title  | pub_name | price | dop        | bookcopy |
++------+--------+----------+-------+------------+----------+
+|    3 | abc2   | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3   | pqr3     |   250 | 2000-05-17 |       20 |
+|    2 | abc1   | pqr1     |   150 | 2000-10-17 |       11 |
+|    1 | abcnew | pqr      |   100 | 1999-10-17 |       10 |
+|    5 | new    | new1     |  NULL | NULL       |     NULL |
++------+--------+----------+-------+------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> select distinct pub_name from book where ISBN in(select ISBN from authors where author_name like 'a%');
++----------+
+| pub_name |
++----------+
+| pqr      |
++----------+
+1 row in set (0.00 sec)
+
+mysql> select pub_name from book where ISBN in(select ISBN from authors where author_name like 'a%');
++----------+
+| pub_name |
++----------+
+| pqr      |
++----------+
+1 row in set (0.00 sec)
+
+mysql> select count(bookcopy) from book where year(dop) between 1999 and curdate();
++-----------------+
+| count(bookcopy) |
++-----------------+
+|               4 |
++-----------------+
+1 row in set (0.00 sec)
+
+mysql> select sum(bookcopy) from book where year(dop) between 1999 and curdate();
++---------------+
+| sum(bookcopy) |
++---------------+
+|            61 |
++---------------+
+1 row in set (0.00 sec)
+
+mysql> select a.ISBN,a.title,b.author_name from book a,authors b;
++------+--------+-------------+
+| ISBN | title  | author_name |
++------+--------+-------------+
+|    1 | abcnew | aaa         |
+|    1 | abcnew | bbb         |
+|    1 | abcnew | ccc         |
+|    2 | abc1   | aaa         |
+|    2 | abc1   | bbb         |
+|    2 | abc1   | ccc         |
+|    3 | abc2   | aaa         |
+|    3 | abc2   | bbb         |
+|    3 | abc2   | ccc         |
+|    4 | abc3   | aaa         |
+|    4 | abc3   | bbb         |
+|    4 | abc3   | ccc         |
+|    5 | new    | aaa         |
+|    5 | new    | bbb         |
+|    5 | new    | ccc         |
++------+--------+-------------+
+15 rows in set (0.00 sec)
+
+mysql> select a.ISBN,a.title,b.author_name from book a,authors b where a.ISBN=b.ISBN;
++------+--------+-------------+
+| ISBN | title  | author_name |
++------+--------+-------------+
+|    1 | abcnew | aaa         |
+|    2 | abc1   | bbb         |
+|    3 | abc2   | ccc         |
++------+--------+-------------+
+3 rows in set (0.00 sec)
+
+mysql> select * from book;
++------+--------+----------+-------+------------+----------+
+| ISBN | title  | pub_name | price | dop        | bookcopy |
++------+--------+----------+-------+------------+----------+
+|    1 | abcnew | pqr      |   100 | 1999-10-17 |       10 |
+|    2 | abc1   | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | abc2   | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3   | pqr3     |   250 | 2000-05-17 |       20 |
+|    5 | new    | new1     |  NULL | NULL       |     NULL |
++------+--------+----------+-------+------------+----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from authors;
++------+-------------+------------+------------+------+
+| ISBN | author_name | authorcity | ph         | addr |
++------+-------------+------------+------------+------+
+|    1 | aaa         | p          | 1000000000 | NULL |
+|    2 | bbb         | pune       | 150000000  | NULL |
+|    3 | ccc         | r          | 25000000   | NULL |
++------+-------------+------------+------------+------+
+3 rows in set (0.00 sec)
+
+mysql> insert into book(ISBN) values(6);
+ERROR 1364 (HY000): Field 'title' doesn't have a default value
+mysql> insert into book values(6,'asd','ghj',800,'2015-12-21',89);
+Query OK, 1 row affected (0.04 sec)
+
+mysql> insert into authors values(7,'kju','jk',541458,'ajs');
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`niraj`.`authors`, CONSTRAINT `authors_ibfk_1` FOREIGN KEY (`ISBN`) REFERENCES `book` (`ISBN`) ON DELETE CASCADE ON UPDATE CASCADE)
+mysql> select * from book left outer join authors on book.ISBN=authors.ISBN;
++------+--------+----------+-------+------------+----------+------+-------------+------------+------------+------+
+| ISBN | title  | pub_name | price | dop        | bookcopy | ISBN | author_name | authorcity | ph         | addr |
++------+--------+----------+-------+------------+----------+------+-------------+------------+------------+------+
+|    1 | abcnew | pqr      |   100 | 1999-10-17 |       10 |    1 | aaa         | p          | 1000000000 | NULL |
+|    2 | abc1   | pqr1     |   150 | 2000-10-17 |       11 |    2 | bbb         | pune       | 150000000  | NULL |
+|    3 | abc2   | pqr2     |   250 | 2000-05-17 |       20 |    3 | ccc         | r          | 25000000   | NULL |
+|    4 | abc3   | pqr3     |   250 | 2000-05-17 |       20 | NULL | NULL        | NULL       | NULL       | NULL |
+|    5 | new    | new1     |  NULL | NULL       |     NULL | NULL | NULL        | NULL       | NULL       | NULL |
+|    6 | asd    | ghj      |   800 | 2015-12-21 |       89 | NULL | NULL        | NULL       | NULL       | NULL |
++------+--------+----------+-------+------------+----------+------+-------------+------------+------------+------+
+6 rows in set (0.00 sec)
+
+mysql> select * from authors right outer join book on book.ISBN=authors.ISBN;
++------+-------------+------------+------------+------+------+--------+----------+-------+------------+----------+
+| ISBN | author_name | authorcity | ph         | addr | ISBN | title  | pub_name | price | dop        | bookcopy |
++------+-------------+------------+------------+------+------+--------+----------+-------+------------+----------+
+|    1 | aaa         | p          | 1000000000 | NULL |    1 | abcnew | pqr      |   100 | 1999-10-17 |       10 |
+|    2 | bbb         | pune       | 150000000  | NULL |    2 | abc1   | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | ccc         | r          | 25000000   | NULL |    3 | abc2   | pqr2     |   250 | 2000-05-17 |       20 |
+| NULL | NULL        | NULL       | NULL       | NULL |    4 | abc3   | pqr3     |   250 | 2000-05-17 |       20 |
+| NULL | NULL        | NULL       | NULL       | NULL |    5 | new    | new1     |  NULL | NULL       |     NULL |
+| NULL | NULL        | NULL       | NULL       | NULL |    6 | asd    | ghj      |   800 | 2015-12-21 |       89 |
++------+-------------+------------+------------+------+------+--------+----------+-------+------------+----------+
+6 rows in set (0.00 sec)
+
+mysql> create view v5 as select a.title,b.author_name,a.ISBN from book a,authors b ;
+Query OK, 0 rows affected (0.12 sec)
+
+mysql> select * from v5;
++--------+-------------+------+
+| title  | author_name | ISBN |
++--------+-------------+------+
+| abcnew | aaa         |    1 |
+| abcnew | bbb         |    1 |
+| abcnew | ccc         |    1 |
+| abc1   | aaa         |    2 |
+| abc1   | bbb         |    2 |
+| abc1   | ccc         |    2 |
+| abc2   | aaa         |    3 |
+| abc2   | bbb         |    3 |
+| abc2   | ccc         |    3 |
+| abc3   | aaa         |    4 |
+| abc3   | bbb         |    4 |
+| abc3   | ccc         |    4 |
+| new    | aaa         |    5 |
+| new    | bbb         |    5 |
+| new    | ccc         |    5 |
+| asd    | aaa         |    6 |
+| asd    | bbb         |    6 |
+| asd    | ccc         |    6 |
++--------+-------------+------+
+18 rows in set (0.00 sec)
+
+mysql> drop view v5;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> create view v5 as select a.title,b.author_name,a.ISBN from book a,authors b where a.ISBN = b.ISBN ;
+Query OK, 0 rows affected (0.13 sec)
+
+mysql> select * from v5;
++--------+-------------+------+
+| title  | author_name | ISBN |
++--------+-------------+------+
+| abcnew | aaa         |    1 |
+| abc1   | bbb         |    2 |
+| abc2   | ccc         |    3 |
++--------+-------------+------+
+3 rows in set (0.00 sec)
+
+mysql> insert into v5 values('qqq','zzz',10);
+ERROR 1394 (HY000): Can not insert into join view 'niraj.v5' without fields list
+mysql> insert into v5 values('qqq','zzz',10);
+ERROR 1394 (HY000): Can not insert into join view 'niraj.v5' without fields list
+mysql> insert into v5 (title,author_name,ISBN ) values('qqq','zzz',10);
+ERROR 1393 (HY000): Can not modify more than one base table through a join view 'niraj.v5'
+mysql> insert into v5 (book.title,authors.author_name,book.ISBN ) values('qqq','zzz',10);
+ERROR 1054 (42S22): Unknown column 'book.title' in 'field list'
+mysql> insert into v5 (book.title,ISBN ) values('qqq',10);
+ERROR 1054 (42S22): Unknown column 'book.title' in 'field list'
+mysql> insert into v5 (title,ISBN ) values('qqq',10);
+Query OK, 1 row affected (0.12 sec)
+
+mysql> select * from v5;
++--------+-------------+------+
+| title  | author_name | ISBN |
++--------+-------------+------+
+| abcnew | aaa         |    1 |
+| abc1   | bbb         |    2 |
+| abc2   | ccc         |    3 |
++--------+-------------+------+
+3 rows in set (0.01 sec)
+
+mysql> select * from v5;
++--------+-------------+------+
+| title  | author_name | ISBN |
++--------+-------------+------+
+| abcnew | aaa         |    1 |
+| abc1   | bbb         |    2 |
+| abc2   | ccc         |    3 |
++--------+-------------+------+
+3 rows in set (0.00 sec)
+
+mysql> select * from book;
++------+--------+----------+-------+------------+----------+
+| ISBN | title  | pub_name | price | dop        | bookcopy |
++------+--------+----------+-------+------------+----------+
+|    1 | abcnew | pqr      |   100 | 1999-10-17 |       10 |
+|    2 | abc1   | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | abc2   | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3   | pqr3     |   250 | 2000-05-17 |       20 |
+|    5 | new    | new1     |  NULL | NULL       |     NULL |
+|    6 | asd    | ghj      |   800 | 2015-12-21 |       89 |
+|   10 | qqq    | NULL     |  NULL | NULL       |     NULL |
++------+--------+----------+-------+------------+----------+
+7 rows in set (0.00 sec)
+
+mysql> insert into v5 (author_name,ISBN) values('zzz',10);
+ERROR 1393 (HY000): Can not modify more than one base table through a join view 'niraj.v5'
+mysql> insert into v5 (author_name) values('zzz');
+ERROR 1423 (HY000): Field of view 'niraj.v5' underlying table doesn't have a default value
+mysql> delete from v1 where ISBN=1;
+Query OK, 1 row affected (0.11 sec)
+
+mysql> select * from book;
++------+-------+----------+-------+------------+----------+
+| ISBN | title | pub_name | price | dop        | bookcopy |
++------+-------+----------+-------+------------+----------+
+|    2 | abc1  | pqr1     |   150 | 2000-10-17 |       11 |
+|    3 | abc2  | pqr2     |   250 | 2000-05-17 |       20 |
+|    4 | abc3  | pqr3     |   250 | 2000-05-17 |       20 |
+|    5 | new   | new1     |  NULL | NULL       |     NULL |
+|    6 | asd   | ghj      |   800 | 2015-12-21 |       89 |
+|   10 | qqq   | NULL     |  NULL | NULL       |     NULL |
++------+-------+----------+-------+------------+----------+
+6 rows in set (0.01 sec)
+
+mysql> 
+

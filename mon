@@ -1,0 +1,183 @@
+db.library.insert(
+	{
+		isbn:1234,
+		title:"MongoDB",
+		pub_name:"vaibhav",
+		price:560,
+		date_pub:"10/12/2016",
+		book_copy:125,
+		address:"pune",
+		phone:1234567890
+	}
+)
+
+------------------------------------------------------------------------
+
+db.library.insert(
+	{
+		isbn:2222,
+		title:"Hadoop",
+		pub_name:"niraj",
+		price:900,
+		date_pub:"01/02/2005",
+		book_copy:210,
+		address:"pune",
+		phone:7894531230
+	}
+)
+
+------------------------------------------------------------------------
+
+db.library.find().pretty()
+
+------------------------------------------------------------------------
+
+db.library.find({},{_id:0}).pretty()
+
+------------------------------------------------------------------------
+
+db.library.find({},{_id:0,title:1,price:1,book_copy:1}).pretty()
+
+------------------------------------------------------------------------
+
+db.library.find({title:{$ne:"MongoDB"}}).pretty()
+
+------------------------------------------------------------------------
+
+db.library.find({price:{$gte:500}}).pretty()
+
+------------------------------------------------------------------------
+
+db.library.remove({pub_name:"tatamcgraw hill"})
+
+------------------------------------------------------------------------
+
+db.library.update({isbn:1234},{$set:{pub_name:"tatamcgraw hill"}})
+
+------------------------------------------------------------------------
+
+db.library.remove({title:"Hadoop"})
+
+------------------------------------------------------------------------
+
+db.library.update({isbn:1234},{$set:{_id:100}})
+
+------------------------------------------------------------------------
+
+db.library.save(
+	{
+		_id:100,
+		isbn:2223,
+		title:"ml",
+		pub_name:"commode",
+		price:1500,
+		date_pub:"03/04/2015",
+		book_copy:810,
+		address:"loni",
+		phone:7824531230
+	}
+)
+
+------------------------------------------------------------------------
+
+db.library.update({isbn:2223},{$set:{_id:101 //// error 
+///Performing an update on the path '_id' would modify the immutable field '_id'"
+
+------------------------------------------------------------------------
+
+db.library.find({$and:[{price:{$gt:100}},{price:{$lt:700}}]}).pretty()
+
+------------------------------------------------------------------------
+
+db.library.update({},{$set:{phone:99999999}})
+
+------------------------------------------------------------------------
+db.students.insert({
+	roll_no:31451,
+	name:"sanam",
+	marks:
+	{
+		dbms:21,
+		cn:23,
+		toc:26
+	},
+	branch:"it"
+});
+
+
+
+//Creating unique index
+db.students.createIndex({"roll_no":1},{unique: true});
+
+
+------------------------------------------------------------------------
+
+db.students.aggregate([
+	{
+	$project:{
+		name : 1,
+		total_marks : {$sum : ['$marks.dbms','$marks.cn','$marks.toc']}
+	}
+	}
+])
+
+
+------------------------------------------------------------------------
+
+db.students.aggregate([
+	{
+		$project:{
+			name : 1,
+			total_marks : {$sum : ['$marks.dbms','$marks.cn','$marks.toc']}
+		}
+	},
+	{
+		$match:
+		{total_marks:{$gt:70}}
+	}
+])
+
+------------------------------------------------------------------------
+
+db.students.aggregate([
+	{
+	$project:{
+		name : 1,
+		total_marks : {$sum : ['$marks.dbms','$marks.cn','$marks.toc']}
+	}
+	}
+]).forEach(function(doc){db.students.update({'name':doc.name},{$set:{'total':doc.total_marks}},{multi:true,upsert:true})});
+
+
+------------------------------------------------------------------------
+
+
+db.students.aggregate([{
+	$group:
+	{
+		_id:'$branch',
+		total_m : {$max:'$total'}
+	}
+}]).forEach(function(doc){db.students.find({total:doc.total_m})})
+
+
+------------------------------------------------------------------------
+
+db.students.aggregate(
+	[
+		{$sort:{roll_no:1}},
+		{$project:{_id:0,name:1}}	
+	]
+)
+
+------------------------------------------------------------------------
+
+db.students.aggregate(
+	[
+		{$group:{_id:"$roll_no"}},
+		{$sort:{roll_no:1}}
+	]
+)
+------------------------------------------------------------------------
+
+db.students.find({},{_id:0,name:1,total_marks:1})
